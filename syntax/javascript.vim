@@ -2,9 +2,9 @@
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
 " Last Change:  2006 March 10
-" Version:      0.2
+" Version:      0.3
 " Based On:     javascript.vim from Claudio Fleiner <claudio@fleiner.com>
-" Changes:      Change file mode to UNIX. 
+" Changes:      Include all JavaScript Global Objects; and jsLabel support
 "
 " TODO
 "   - internal function hightlight
@@ -30,23 +30,29 @@ syntax case match
 syntax match   jsSpecial        "\\\d\d\d\|\\."
 syntax region  jsStringD        start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=jsSpecial,@htmlPreproc
 syntax region  jsStringS        start=+'+  skip=+\\\\\|\\'+  end=+'+  contains=jsSpecial,@htmlPreproc
+syntax region  jsRegexpString   start=+/[^/*]+me=e-1 skip=+\\\\\|\\/+ end=+/[gi]\?\s*$+ end=+/[gi]\?\s*[;.,)]+me=e-1 contains=@htmlPreproc oneline
+syntax match   jsNumber         "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
 
 syntax keyword jsCommentTodo    TODO FIXME XXX TBD contained
 syntax region  jsLineComment    start=+\/\/+ end=/$/ contains=jsCommentTodo oneline
 syntax region  jsComment        start="/\*"  end="\*/" contains=jsCommentTodo,jsLineComment
 
-syntax match   jsNumber         "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
-syntax region  jsRegexpString   start=+/[^/*]+me=e-1 skip=+\\\\\|\\/+ end=+/[gi]\?\s*$+ end=+/[gi]\?\s*[;.,)]+me=e-1 contains=@htmlPreproc oneline
+syntax match   jsLabel          /\(?\s*\)\@<!\w\+\(\s*:\)\@=/
 
 "" Programm Keywords
-syntax keyword jsConditional    if else
-syntax keyword jsRepeat         while for
-syntax keyword jsBranch         break continue switch case default
-syntax keyword jsOperator       new in
-syntax keyword jsType           this var const
-syntax keyword jsStatement      return try catch throw with 
+syntax keyword jsSource         import export
+syntax keyword jsType           this var const void 
+syntax keyword jsOperator       delete new in instanceof typeof 
 syntax keyword jsBoolean        true false
 syntax keyword jsNull           null
+
+"" Statement Keywords
+syntax keyword jsConditional    if else
+syntax keyword jsRepeat         while for
+syntax keyword jsBranch         break continue switch case default return 
+syntax keyword jsStatement      try catch throw with 
+
+syntax keyword jsGlobalObjects  Array Boolean Date Error Function java JavaArray JavaClass JavaObject JavaPackage Math netscape Number Object Packages RegExp String sun
 
 if exists("javaScript_fold")
     syntax match  jsFunction            "\<function\>"
@@ -65,9 +71,9 @@ syntax sync fromstart
 syntax sync maxlines=100
 
 " Code blocks
-syntax cluster jsAll       contains=jsComment,jsSpecial,jsStringD,jsStringS,jsNumber,jsRegexpString,jsBoolean,jsFunction,jsFunctionFold,jsConditional,jsRepeat,jsBranch,jsOperator,jsType,jsStatement,jsBoolean,jsConstant
-syntax region  jsBracket   matchgroup=jsBracket transparent start="\[" end="\]" contains=@jsAll,jsBracket,jsParen
-syntax region  jsParen     matchgroup=jsParen transparent start="(" end=")" contains=@jsAll,jsParen,jsBracket
+syntax cluster jsAll       contains=jsComment,jsSpecial,jsStringD,jsStringS,jsNumber,jsRegexpString,jsBoolean,jsFunction,jsFunctionFold,jsConditional,jsRepeat,jsBranch,jsOperator,jsType,jsStatement,jsBoolean,jsGlobalObjects
+syntax region  jsBracket   matchgroup=jsBracket transparent start="\[" end="\]" contains=@jsAll,jsBracket,jsParen,jsBlock
+syntax region  jsParen     matchgroup=jsParen transparent start="(" end=")" contains=@jsAll,jsParen,jsBracket,jsBlock
 syntax region  jsBlock     matchgroup=jsBlcok transparent start="{" end="}" contains=ALL 
 
 " catch errors caused by wrong parenthesis
@@ -90,24 +96,27 @@ if version >= 508 || !exists("did_javascript_syn_inits")
   HiLink jsComment              Comment
   HiLink jsLineComment          Comment
   HiLink jsCommentTodo          Todo
-  HiLink jsSpecial              Special
   HiLink jsStringS              String
   HiLink jsStringD              String
+  HiLink jsRegexpString         String
   HiLink jsCharacter            Character
-  HiLink jsNumber               jsValue
   HiLink jsConditional          Conditional
-  HiLink jsRepeat               Repeat
   HiLink jsBranch               Conditional
-  HiLink jsOperator             Operator
-  HiLink jsType                 Type
+  HiLink jsRepeat               Repeat
   HiLink jsStatement            Statement
   HiLink jsFunction             Function
   HiLink jsBlock                Function
   HiLink jsError                Error
-  HiLink jsParenError           jsError
-  HiLink jsNull                 Keyword
+  HiLink jsParenError           Error
+  HiLink jsOperator             Operator
+  HiLink jsType                 Type
+  HiLink jsNull                 Type
+  HiLink jsNumber               Number
   HiLink jsBoolean              Boolean
-  HiLink jsRegexpString         String
+  HiLink jsLabel                Label
+  HiLink jsSpecial              Special
+  HiLink jsSource               Special
+  HiLink jsGlobalObjects        Special
   delcommand HiLink
 endif
 
