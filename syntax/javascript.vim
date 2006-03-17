@@ -1,10 +1,10 @@
 " Vim syntax file
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
-" Last Change:  2006 March 10
-" Version:      0.3
+" Last Change:  2006 March 18
+" Version:      0.4
 " Based On:     javascript.vim from Claudio Fleiner <claudio@fleiner.com>
-" Changes:      Include all JavaScript Global Objects; and jsLabel support
+" Changes:      Update the jsRegexpString and jsSpecial for Dojo code.
 "
 " TODO
 "   - internal function hightlight
@@ -27,10 +27,10 @@ endif
 
 syntax case match
 
-syntax match   jsSpecial        "\\\d\d\d\|\\."
+syntax match   jsSpecial        "\\\d\d\d\|\\x[0-9a-fA-F]\{2\}\|\\u[0-9a-fA-F]\{4\}\|\\."
 syntax region  jsStringD        start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=jsSpecial,@htmlPreproc
 syntax region  jsStringS        start=+'+  skip=+\\\\\|\\'+  end=+'+  contains=jsSpecial,@htmlPreproc
-syntax region  jsRegexpString   start=+/[^/*]+me=e-1 skip=+\\\\\|\\/+ end=+/[gi]\?\s*$+ end=+/[gi]\?\s*[;.,)]+me=e-1 contains=@htmlPreproc oneline
+syntax region  jsRegexpString   start=+/\(\*\|/\)\@!+ skip=+\\\\\|\\/+ end=+/[gim]*+ contains=jsSpecial,@htmlPreproc oneline
 syntax match   jsNumber         "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
 
 syntax keyword jsCommentTodo    TODO FIXME XXX TBD contained
@@ -71,7 +71,7 @@ syntax sync fromstart
 syntax sync maxlines=100
 
 " Code blocks
-syntax cluster jsAll       contains=jsComment,jsSpecial,jsStringD,jsStringS,jsNumber,jsRegexpString,jsBoolean,jsFunction,jsFunctionFold,jsConditional,jsRepeat,jsBranch,jsOperator,jsType,jsStatement,jsBoolean,jsGlobalObjects
+syntax cluster jsAll       contains=jsComment,jsLineComment,jsSpecial,jsStringD,jsStringS,jsNumber,jsRegexpString,jsBoolean,jsFunction,jsFunctionFold,jsConditional,jsRepeat,jsBranch,jsOperator,jsType,jsStatement,jsBoolean,jsGlobalObjects
 syntax region  jsBracket   matchgroup=jsBracket transparent start="\[" end="\]" contains=@jsAll,jsBracket,jsParen,jsBlock
 syntax region  jsParen     matchgroup=jsParen transparent start="(" end=")" contains=@jsAll,jsParen,jsBracket,jsBlock
 syntax region  jsBlock     matchgroup=jsBlcok transparent start="{" end="}" contains=ALL 
