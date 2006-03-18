@@ -2,9 +2,9 @@
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
 " Last Change:  2006 March 18
-" Version:      0.4
+" Version:      0.4.1
 " Based On:     javascript.vim from Claudio Fleiner <claudio@fleiner.com>
-" Changes:      Update the jsRegexpString and jsSpecial for Dojo code.
+" Changes:      Minor fix with jsLabel and jsRegexpString
 "
 " TODO
 "   - internal function hightlight
@@ -28,16 +28,16 @@ endif
 syntax case match
 
 syntax match   jsSpecial        "\\\d\d\d\|\\x[0-9a-fA-F]\{2\}\|\\u[0-9a-fA-F]\{4\}\|\\."
-syntax region  jsStringD        start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=jsSpecial,@htmlPreproc
-syntax region  jsStringS        start=+'+  skip=+\\\\\|\\'+  end=+'+  contains=jsSpecial,@htmlPreproc
-syntax region  jsRegexpString   start=+/\(\*\|/\)\@!+ skip=+\\\\\|\\/+ end=+/[gim]*+ contains=jsSpecial,@htmlPreproc oneline
+syntax region  jsStringD        start=+"+  skip=+\\\\\|\\$"+  end=+"+  contains=jsSpecial,@htmlPreproc
+syntax region  jsStringS        start=+'+  skip=+\\\\\|\\$'+  end=+'+  contains=jsSpecial,@htmlPreproc
+syntax region  jsRegexpString   start=+/\(\*\|/\)\@!+ skip=+\\\\\|\\/+ end=+/[gim]*\(\s*[),.;$]\)\@=+ contains=jsSpecial,@htmlPreproc oneline
 syntax match   jsNumber         "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
 
 syntax keyword jsCommentTodo    TODO FIXME XXX TBD contained
 syntax region  jsLineComment    start=+\/\/+ end=/$/ contains=jsCommentTodo oneline
 syntax region  jsComment        start="/\*"  end="\*/" contains=jsCommentTodo,jsLineComment
 
-syntax match   jsLabel          /\(?\s*\)\@<!\w\+\(\s*:\)\@=/
+syntax match   jsLabel          /\(?\s*\)\@<!\<\w\+\(\s*:\)\@=/
 
 "" Programm Keywords
 syntax keyword jsSource         import export
