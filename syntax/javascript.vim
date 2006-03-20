@@ -1,14 +1,13 @@
 " Vim syntax file
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
-" Last Change:  2006 March 18
-" Version:      0.4.1
+" Last Change:  2006 March 20
+" Version:      0.5
 " Based On:     javascript.vim from Claudio Fleiner <claudio@fleiner.com>
-" Changes:      Minor fix with jsLabel and jsRegexpString
+" Changes:      export @htmlJavaScript to html.vim
 "
 " TODO
 "   - internal function hightlight
-"   - code fold support
 "
 
 if !exists("main_syntax")
@@ -23,6 +22,8 @@ endif
 " Drop fold if it set but vim doesn't support it.
 if version < 600 && exists("javaScript_fold")
   unlet javaScript_fold
+"else
+"  let javaScript_fold = 'true'
 endif
 
 syntax case match
@@ -35,7 +36,7 @@ syntax match   jsNumber         "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
 
 syntax keyword jsCommentTodo    TODO FIXME XXX TBD contained
 syntax region  jsLineComment    start=+\/\/+ end=/$/ contains=jsCommentTodo oneline
-syntax region  jsComment        start="/\*"  end="\*/" contains=jsCommentTodo,jsLineComment
+syntax region  jsComment        start="/\*"  end="\*/" contains=jsCommentTodo,jsLineComment fold
 
 syntax match   jsLabel          /\(?\s*\)\@<!\<\w\+\(\s*:\)\@=/
 
@@ -48,30 +49,17 @@ syntax keyword jsNull           null
 
 "" Statement Keywords
 syntax keyword jsConditional    if else
-syntax keyword jsRepeat         while for
+syntax keyword jsRepeat         do while for
 syntax keyword jsBranch         break continue switch case default return 
 syntax keyword jsStatement      try catch throw with 
 
 syntax keyword jsGlobalObjects  Array Boolean Date Error Function java JavaArray JavaClass JavaObject JavaPackage Math netscape Number Object Packages RegExp String sun
 
-if exists("javaScript_fold")
-    syntax match  jsFunction            "\<function\>"
-    syntax region jsFunctionFold        start="\<function\>.*[^};]$" end="^\z1}.*$" transparent fold keepend
-
-    syntax sync match jsSync    grouphere jsFunctionFold "\<function\>"
-    syntax sync match jsSync    grouphere NONE "^}"
-
-    setlocal foldmethod=syntax
-    setlocal foldtext=getline(v:foldstart)
-else
-    syntax keyword    jsFunction        function
-endif
-
 syntax sync fromstart
 syntax sync maxlines=100
 
 " Code blocks
-syntax cluster jsAll       contains=jsComment,jsLineComment,jsSpecial,jsStringD,jsStringS,jsNumber,jsRegexpString,jsBoolean,jsFunction,jsFunctionFold,jsConditional,jsRepeat,jsBranch,jsOperator,jsType,jsStatement,jsBoolean,jsGlobalObjects
+syntax cluster jsAll       contains=jsComment,jsLineComment,jsSpecial,jsStringD,jsStringS,jsNumber,jsRegexpString,jsBoolean,jsFunction,jsConditional,jsRepeat,jsBranch,jsOperator,jsType,jsStatement,jsBoolean,jsGlobalObjects
 syntax region  jsBracket   matchgroup=jsBracket transparent start="\[" end="\]" contains=@jsAll,jsBracket,jsParen,jsBlock
 syntax region  jsParen     matchgroup=jsParen transparent start="(" end=")" contains=@jsAll,jsParen,jsBracket,jsBlock
 syntax region  jsBlock     matchgroup=jsBlcok transparent start="{" end="}" contains=ALL 
@@ -81,6 +69,21 @@ syntax match   jsParenError  ")\|}\|\]"
 
 if main_syntax == "javascript"
   syntax sync ccomment jsComment
+endif
+
+if exists("javaScript_fold")
+    syntax match  jsFunction            /\<function\>/
+    syntax match  jsFuncFoldStart       /\([=:^]\s*\)\@<=\<function\>\(\s*\w*\s*\)\@=/ nextgroup=jsFuncFoldParen skipwhite fold
+    syntax region jsFuncFoldParen       start="(" end=")" contained nextgroup=jsFuncBlock skipwhite contains=@jsAll,jsParen fold
+    syntax region jsFuncFoldBlock       start="{" end="}\([\s;]*$\)\@=" skipwhite contains=ALL contained fold
+
+    syntax sync match jsSync    grouphere jsFuncFoldBlock "\<function\>"
+    syntax sync match jsSync    grouphere NONE "^}"
+
+    setlocal foldmethod=syntax
+    setlocal foldtext=getline(v:foldstart)
+else
+    syntax keyword    jsFunction        function
 endif
 
 " Define the default highlighting.
@@ -119,6 +122,11 @@ if version >= 508 || !exists("did_javascript_syn_inits")
   HiLink jsGlobalObjects        Special
   delcommand HiLink
 endif
+
+" Define the htmlJavaScript for HTML syntax html.vim
+syntax cluster htmlJavaScript contains=@jsAll,jsBracket,jsParen,jsBlock,jsParenError
+" Removing javaScriptExpression, while it didn't work because we are loaded first.
+"syntax clear javaScriptExpression
 
 let b:current_syntax = "javascript"
 if main_syntax == 'javascript'
