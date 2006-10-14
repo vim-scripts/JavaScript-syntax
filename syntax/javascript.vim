@@ -2,9 +2,10 @@
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
 " Last Change:  2006 March 20
-" Version:      0.5.1
-" Based On:     javascript.vim from Claudio Fleiner <claudio@fleiner.com>
-" Changes:      Minor update for jsRegexpString
+" Version:      0.5.2
+" Based On:     javascript.vim from Claudio Fleiner <claudio AT fleiner.com>
+" Changes:      dollar sigh '$' and underscore '_' are permitted anywhere in an identifier.
+"               Thanks for the help from "Nai chao Wu" <superwunc AT hotmail.com>
 "
 " TODO
 "   - internal function hightlight
@@ -25,6 +26,9 @@ if version < 600 && exists("javaScript_fold")
 "else
 "  let javaScript_fold = 'true'
 endif
+
+" dollar sigh is permittd anywhere in an identifier
+setlocal iskeyword+=$
 
 syntax case match
 
@@ -51,12 +55,12 @@ syntax keyword jsNull           null
 syntax keyword jsConditional    if else
 syntax keyword jsRepeat         do while for
 syntax keyword jsBranch         break continue switch case default return 
-syntax keyword jsStatement      try catch throw with 
+syntax keyword jsStatement      try catch throw with finally 
 
-syntax keyword jsGlobalObjects  Array Boolean Date Error Function java JavaArray JavaClass JavaObject JavaPackage Math netscape Number Object Packages RegExp String sun
+syntax keyword jsGlobalObjects  Array Boolean Date Error Function java JavaArray JavaClass JavaObject JavaPackage Math netscape Number NaN Object Packages RegExp String sun
 
 syntax sync fromstart
-syntax sync maxlines=100
+syntax sync maxlines=200
 
 " Code blocks
 syntax cluster jsAll       contains=jsComment,jsLineComment,jsSpecial,jsStringD,jsStringS,jsNumber,jsRegexpString,jsBoolean,jsFunction,jsConditional,jsRepeat,jsBranch,jsOperator,jsType,jsStatement,jsBoolean,jsGlobalObjects
