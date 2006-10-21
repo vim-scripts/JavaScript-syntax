@@ -1,10 +1,13 @@
 " Vim syntax file
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
-" Last Change:  2006 March 20
-" Version:      0.6
+" Last Change:  2006 Oct. 21
+" Version:      0.6.5
 " Based On:     javascript.vim from Claudio Fleiner <claudio AT fleiner.com>
-" Changes:      Add JSDoc support, refer to http://jsdoc.sourceforge.net/
+" Changes:      Add the jsFloat
+"               Refine the jsNumber.
+"               The tags' value of JSDoc will be highlighted.
+"               Define fold for function and comments.
 "
 " TODO:
 "  - Add the HTML syntax inside the JSDoc
@@ -21,8 +24,8 @@ endif
 " Drop fold if it set but vim doesn't support it.
 if version < 600 && exists("javaScript_fold")
   unlet javaScript_fold
-"else
-"  let javaScript_fold = 'false'
+else
+  let javaScript_fold = 'false'
 endif
 
 "" dollar sigh is permittd anywhere in an identifier
@@ -41,10 +44,15 @@ syntax region  jsComment        start="/\*"  end="\*/" contains=jsCommentTodo,js
 if !exists("javascript_ignore_jsdoc")
   syntax case ignore
 
-  syntax region jsDocComment    start="/\*\*\s*$"  end="\*/" contains=jsDocTags,jsDocSeeTag,jsCommentTodo,jsCvsTag,@Spell fold
-  syntax match  jsDocTags       contained "@\(param\|argument\|requires\|exception\|throws\|type\|extends\|see\|link\|member\|base\|file\)\>" 
-  syntax match  jsDocTags       contained "@\(deprecated\|fileoverview\|author\|license\|version\|returns\?\|class\|constructor\|private\|final\|ignore\|addon\|exec\)\>"
-  syntax region jsDocSeeTag     contained start="{" end="}" oneline contains=jsDocTags
+  " syntax coloring for javadoc comments (HTML)
+  "syntax include @javaHtml <sfile>:p:h/html.vim
+  "unlet b:current_syntax  
+  
+  syntax region jsDocComment    matchgroup=jsComment start="/\*\*\s*$"  end="\*/" contains=jsDocTags,jsDocSeeTag,jsCommentTodo,jsCvsTag,@jsHtml,@Spell fold
+  syntax match  jsDocTags       contained "@\(param\|argument\|requires\|exception\|throws\|type\|class\|extends\|see\|link\|member\|base\|file\)\>" nextgroup=jsDocParam skipwhite
+  syntax match  jsDocTags       contained "@\(deprecated\|fileoverview\|author\|license\|version\|returns\=\|constructor\|private\|final\|ignore\|addon\|exec\)\>"
+  syntax match  jsDocParam      contained "#\=\<\w\+\>"
+  syntax region jsDocSeeTag     contained matchgroup=jsDocSeeTag start="{" end="}" contains=jsDocTags
 
   syntax case match
 endif   "" JSDoc end
@@ -56,8 +64,9 @@ syntax match   jsSpecial        "\\\d\d\d\|\\x[0-9a-fA-F]\{2\}\|\\u[0-9a-fA-F]\{
 syntax region  jsStringD        start=+"+  skip=+\\\\\|\\$"+  end=+"+  contains=jsSpecial,@htmlPreproc
 syntax region  jsStringS        start=+'+  skip=+\\\\\|\\$'+  end=+'+  contains=jsSpecial,@htmlPreproc
 syntax region  jsRegexpString   start=+/\(\*\|/\)\@!+ skip=+\\\\\|\\/+ end=+/[gim]\{-,3}\(\s*[),.;$]\)\@=+ contains=jsSpecial,@htmlPreproc oneline
-syntax match   jsNumber         "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
-syntax match   jsLabel          /\(?\s*\)\@<!\<\w\+\(\s*:\)\@=/
+syntax match   jsNumber         /-\=\d\+L\=\>\|\<0[xX]\x\+\>/
+syntax match   jsFloat          /-\=\(\d\+\.\d\+\|\d\+\.\|\.\d\+\)\([eE][+-]\=\d\+\)\=\>/
+syntax match   jsLabel          /\%(?\s*\)\@<!\<\w\+\%(\s*:\)\@=/
 
 "" JavaScript Prototype 
 syntax match   jsPrototype      "\.prototype\>"
@@ -77,32 +86,48 @@ syntax keyword jsStatement      try catch throw with finally
 
 syntax keyword jsGlobalObjects  Array Boolean Date Error Function java JavaArray JavaClass JavaObject JavaPackage Math netscape Number NaN Object Packages RegExp String sun
 
-" Code blocks
-syntax cluster jsAll       contains=jsComment,jsLineComment,jsDocComment,jsSpecial,jsStringD,jsStringS,jsNumber,jsRegexpString,jsBoolean,jsFunction,jsConditional,jsRepeat,jsBranch,jsOperator,jsType,jsStatement,jsBoolean,jsGlobalObjects
+"" Code blocks
+syntax cluster jsAll       contains=jsComment,jsLineComment,jsDocComment,jsStringD,jsStringS,jsRegexpString,jsNumber,jsFloat,jsLabel,jsPrototype,jsSource,jsType,jsOperator,jsBoolean,jsNull,jsFunction,jsConditional,jsRepeat,jsBranch,jsStatement,jsGlobalObjects
 syntax region  jsBracket   matchgroup=jsBracket transparent start="\[" end="\]" contains=@jsAll,jsBracket,jsParen,jsBlock,@htmlPreproc
-syntax region  jsParen     matchgroup=jsParen transparent start="(" end=")" contains=@jsAll,jsParen,jsBracket,jsBlock,@htmlPreproc
-syntax region  jsBlock     matchgroup=jsBlcok transparent start="{" end="}" contains=ALL
+syntax region  jsParen     matchgroup=jsParen   transparent start="("  end=")"  contains=@jsAll,jsParen,jsBracket,jsBlock,@htmlPreproc
+syntax region  jsBlock     matchgroup=jsBlock   transparent start="{"  end="}"  contains=@jsAll,jsParen,jsBracket,jsBlock,@htmlPreproc
 
-" catch errors caused by wrong parenthesis
-syntax match   jsParenError  ")\|}\|\]"
+"" catch errors caused by wrong parenthesis
+syntax match   jsParensError  ")\|}\|\]"
 
 if main_syntax == "javascript"
   syntax sync ccomment jsComment
 endif
 
+"" Fold control
 if exists("javaScript_fold")
-    syntax match  jsFunction            /\<function\>/
-    syntax match  jsFuncFoldStart       /\([=:^]\s*\)\@<=\<function\>\(\s*\w*\s*\)\@=/ nextgroup=jsFuncFoldParen skipwhite fold
-    syntax region jsFuncFoldParen       start="(" end=")" contained nextgroup=jsFuncBlock skipwhite contains=@jsAll,jsParen fold
-    syntax region jsFuncFoldBlock       start="{" end="}\([\s;]*$\)\@=" skipwhite contains=ALL contained keepend fold
+    syntax match   jsFunction       /\<function\>/ nextgroup=jsFuncName skipwhite 
+    syntax region  jsFuncName       contained matchgroup=jsFuncName start=/\$\=\w*\s*(/ end=/)/ contains=jsLineComment,jsComment nextgroup=jsFuncBlock skipwhite skipempty
+    syntax region  jsFuncBlock      contained matchgroup=jsFuncBlock start="{" end="}" contains=@jsAll,jsParen,jsBracket,jsBlock fold
 
-    syntax sync match jsSync    grouphere jsFuncFoldBlock "\<function\>"
-    syntax sync match jsSync    grouphere NONE "^}"
-
+    "" Fold setting
+    setlocal foldlevel=3
     setlocal foldmethod=syntax
-    setlocal foldtext=getline(v:foldstart)
+
+    setlocal foldtext=FT_JavaScriptDoc()
+
+    "" Default fold text for JavaScript JSDoc and Function
+    function FT_JavaScriptDoc()
+      let i = 0
+      while i < 3
+        let line = getline(v:foldstart + i)
+        "let line = substitute(line, '^\s\+', '', '')
+        let line = substitute(line, '\s\+$', '', '')
+        if match(line, '\w\+') >= 0 
+          break
+        endif
+        let i += 1
+      endwhile
+      return v:folddashes . line
+    endfunction
+
 else
-    syntax keyword    jsFunction        function
+    syntax keyword jsFunction       function
 endif
 
 " Define the default highlighting.
@@ -134,11 +159,12 @@ if version >= 508 || !exists("did_javascript_syn_inits")
   HiLink jsStatement            Statement
   HiLink jsFunction             Function
   HiLink jsError                Error
-  HiLink jsParenError           Error
+  HiLink jsParensError          Error
   HiLink jsOperator             Operator
   HiLink jsType                 Type
   HiLink jsNull                 Type
   HiLink jsNumber               Number
+  HiLink jsFloat                Number
   HiLink jsBoolean              Boolean
   HiLink jsLabel                Label
   HiLink jsSpecial              Special
