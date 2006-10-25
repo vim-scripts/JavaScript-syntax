@@ -1,11 +1,12 @@
 " Vim syntax file
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
-" Last Change:  2006 Oct. 21
-" Version:      0.6.6
+" Last Change:  2006 Oct. 25
+" Version:      0.6.7
 " Based On:     javascript.vim from Claudio Fleiner <claudio AT fleiner.com>
-" Changes:      Rename the syntax group name to javaScript*
-"               The unmached "[]", "()", and "{}" can be detected.
+" Changes:      JSDoc parameter do recogonize "#.:/" at any position.
+"               The "$" can appear at any position of the function name.
+"               The continous line comments will be folding in fold mode.
 "
 "
 " TODO:
@@ -35,8 +36,8 @@ syntax sync maxlines=200
 
 "" JavaScript comments
 syntax keyword javaScriptCommentTodo    TODO FIXME XXX TBD contained
-syntax region  javaScriptLineComment    start=+\/\/+ end=/$/ contains=javaScriptCommentTodo,@Spell oneline
-syntax region  javaScriptCvsTag         start="$\id:" end="\$" oneline contained
+syntax region  javaScriptLineComment    start=+\/\/+ skip=+\_s\+\/\/+ end=/$/ contains=javaScriptCommentTodo,@Spell fold
+syntax region  javaScriptCvsTag         start="\$\cid:" end="\$" oneline contained
 syntax region  javaScriptComment        start="/\*"  end="\*/" contains=javaScriptCommentTodo,javaScriptLineComment,javaScriptCvsTag,@Spell fold
 
 "" JSDoc support start
@@ -50,7 +51,7 @@ if !exists("javascript_ignore_javaScriptdoc")
   syntax region javaScriptDocComment    matchgroup=javaScriptComment start="/\*\*\s*$"  end="\*/" contains=javaScriptDocTags,javaScriptDocSeeTag,javaScriptCommentTodo,javaScriptCvsTag,@javaScriptHtml,@Spell fold
   syntax match  javaScriptDocTags       contained "@\(param\|argument\|requires\|exception\|throws\|type\|class\|extends\|see\|link\|member\|base\|file\)\>" nextgroup=javaScriptDocParam skipwhite
   syntax match  javaScriptDocTags       contained "@\(deprecated\|fileoverview\|author\|license\|version\|returns\=\|constructor\|private\|final\|ignore\|addon\|exec\)\>"
-  syntax match  javaScriptDocParam      contained "#\=\<\w\+\>"
+  syntax match  javaScriptDocParam      contained "\%(#\|\w\|\.\|:\|\/\)\+"
   syntax region javaScriptDocSeeTag     contained matchgroup=javaScriptDocSeeTag start="{" end="}" contains=javaScriptDocTags
 
   syntax case match
@@ -64,8 +65,8 @@ syntax region  javaScriptStringD        start=+"+  skip=+\\\\\|\\$"+  end=+"+  c
 syntax region  javaScriptStringS        start=+'+  skip=+\\\\\|\\$'+  end=+'+  contains=javaScriptSpecial,@htmlPreproc
 syntax region  javaScriptRegexpString   start=+/\(\*\|/\)\@!+ skip=+\\\\\|\\/+ end=+/[gim]\{-,3}\(\s*[),.;$]\)\@=+ contains=javaScriptSpecial,@htmlPreproc oneline
 syntax match   javaScriptNumber         /\<-\=\d\+L\=\>\|\<0[xX]\x\+\>/
-syntax match   javaScriptFloat          /\<-\=\(\d\+\.\d\+\|\d\+\.\|\.\d\+\)\([eE][+-]\=\d\+\)\=\>/
-syntax match   javaScriptLabel          /\%(?\s*\)\@<!\<\w\+\%(\s*:\)\@=/
+syntax match   javaScriptFloat          /\<-\=\%(\d\+\.\d\+\|\d\+\.\|\.\d\+\)\%([eE][+-]\=\d\+\)\=\>/
+syntax match   javaScriptLabel          /\(?\s*\)\@<!\<\w\+\(\s*:\)\@=/
 
 "" JavaScript Prototype 
 syntax match   javaScriptPrototype      "\.prototype\>"
@@ -104,7 +105,7 @@ endif
 "" Fold control
 if exists("javaScript_fold")
     syntax match   javaScriptFunction       /\<function\>/ nextgroup=javaScriptFuncName skipwhite 
-    syntax region  javaScriptFuncName       contained matchgroup=javaScriptFuncName start=/\$\=\w*\s*(/ end=/)/ contains=javaScriptLineComment,javaScriptComment nextgroup=javaScriptFuncBlock skipwhite skipempty
+    syntax region  javaScriptFuncName       contained matchgroup=javaScriptFuncName start=/\%(\$\|\w\)*\s*(/ end=/)/ contains=javaScriptLineComment,javaScriptComment nextgroup=javaScriptFuncBlock skipwhite skipempty
     syntax region  javaScriptFuncBlock      contained matchgroup=javaScriptFuncBlock start="{" end="}" contains=@javaScriptAll,javaScriptParensErrA,javaScriptParensErrB,javaScriptParen,javaScriptBracket,javaScriptBlock fold
 
     "" Fold setting
