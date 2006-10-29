@@ -1,12 +1,11 @@
 " Vim syntax file
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
-" Last Change:  2006 Oct. 25
-" Version:      0.6.7
+" Last Change:  2006 Oct. 30
+" Version:      0.6.8
 " Based On:     javascript.vim from Claudio Fleiner <claudio AT fleiner.com>
-" Changes:      JSDoc parameter do recogonize "#.:/" at any position.
-"               The "$" can appear at any position of the function name.
-"               The continous line comments will be folding in fold mode.
+" Changes:      Fix the function FT_JavaScriptDoc() redefine warning 
+"               when switch buffer in multi-buffer mode.
 "
 "
 " TODO:
@@ -21,7 +20,7 @@ if !exists("main_syntax")
   let main_syntax = 'javascript'
 endif
 
-" Drop fold if it set but vim doesn't support it.
+"" Drop fold if it set but vim doesn't support it.
 if version < 600 && exists("javaScript_fold")
   unlet javaScript_fold
 else
@@ -115,7 +114,7 @@ if exists("javaScript_fold")
     setlocal foldtext=FT_JavaScriptDoc()
 
     "" Default fold text for JavaScript JSDoc and Function
-    function FT_JavaScriptDoc()
+    function! FT_JavaScriptDoc()
       let i = 0
       while i < 3
         let line = getline(v:foldstart + i)
