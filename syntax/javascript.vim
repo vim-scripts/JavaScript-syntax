@@ -1,11 +1,13 @@
 " Vim syntax file
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
-" Last Change:  2006 Oct. 30
-" Version:      0.6.8
+" Last Change:  2006 Nov. 1st
+" Version:      0.6.9
 " Based On:     javascript.vim from Claudio Fleiner <claudio AT fleiner.com>
-" Changes:      Fix the function FT_JavaScriptDoc() redefine warning 
-"               when switch buffer in multi-buffer mode.
+" Changes:      1, Fix a bug of javaScriptLineComment which mark the code line 
+"                  which follows the indent empty // as comment.
+"               2, Modify the javaScriptLinecomment folding mode, 
+"                  Line comments only fold start the full line comment.
 "
 "
 " TODO:
@@ -20,7 +22,7 @@ if !exists("main_syntax")
   let main_syntax = 'javascript'
 endif
 
-"" Drop fold if it set but vim doesn't support it.
+" Drop fold if it set but vim doesn't support it.
 if version < 600 && exists("javaScript_fold")
   unlet javaScript_fold
 else
@@ -35,7 +37,8 @@ syntax sync maxlines=200
 
 "" JavaScript comments
 syntax keyword javaScriptCommentTodo    TODO FIXME XXX TBD contained
-syntax region  javaScriptLineComment    start=+\/\/+ skip=+\_s\+\/\/+ end=/$/ contains=javaScriptCommentTodo,@Spell fold
+syntax region  javaScriptLineComment    start=+\/\/+ end=+$+ keepend contains=javaScriptCommentTodo,@Spell 
+syntax region  javaScriptLineComment    start=+^\s*\/\/+ skip=+\n\s*\/\/+ end=+$+ keepend contains=javaScriptCommentTodo,@Spell fold
 syntax region  javaScriptCvsTag         start="\$\cid:" end="\$" oneline contained
 syntax region  javaScriptComment        start="/\*"  end="\*/" contains=javaScriptCommentTodo,javaScriptLineComment,javaScriptCvsTag,@Spell fold
 
