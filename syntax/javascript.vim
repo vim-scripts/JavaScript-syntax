@@ -1,15 +1,10 @@
 " Vim syntax file
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
-" Last Change:  2006 Nov. 1st
-" Version:      0.6.9
-" Based On:     javascript.vim from Claudio Fleiner <claudio AT fleiner.com>
-" Changes:      1, Fix a bug of javaScriptLineComment which mark the code line 
-"                  which follows the indent empty // as comment.
-"               2, Modify the javaScriptLinecomment folding mode, 
-"                  Line comments only fold start the full line comment.
-"
-"
+" Last Change:  2006 Nov 17th
+" Version:      0.7.0
+" Changes:      Update the keyworks to align with ECMA262-v3
+"              
 " TODO:
 "  - Add the HTML syntax inside the JSDoc
 
@@ -62,7 +57,7 @@ endif   "" JSDoc end
 syntax case match
 
 "" Syntax in the JavaScript code
-syntax match   javaScriptSpecial        "\\\d\d\d\|\\x[0-9a-fA-F]\{2\}\|\\u[0-9a-fA-F]\{4\}\|\\."
+syntax match   javaScriptSpecial        "\\\d\d\d\|\\x\x\{2\}\|\\u\x\{4\}\|\\."
 syntax region  javaScriptStringD        start=+"+  skip=+\\\\\|\\$"+  end=+"+  contains=javaScriptSpecial,@htmlPreproc
 syntax region  javaScriptStringS        start=+'+  skip=+\\\\\|\\$'+  end=+'+  contains=javaScriptSpecial,@htmlPreproc
 syntax region  javaScriptRegexpString   start=+/\(\*\|/\)\@!+ skip=+\\\\\|\\/+ end=+/[gim]\{-,3}\(\s*[),.;$]\)\@=+ contains=javaScriptSpecial,@htmlPreproc oneline
@@ -86,10 +81,14 @@ syntax keyword javaScriptRepeat         do while for
 syntax keyword javaScriptBranch         break continue switch case default return 
 syntax keyword javaScriptStatement      try catch throw with finally 
 
-syntax keyword javaScriptGlobalObjects  Array Boolean Date Error Function java JavaArray JavaClass JavaObject JavaPackage Math netscape Number NaN Object Packages RegExp String sun
+syntax keyword javaScriptGlobalObjects  Array Boolean Date Function Infinity JavaArray JavaClass JavaObject JavaPackage Math Number NaN Object Packages RegExp String Undefined java netscape sun
+
+syntax keyword javaScriptExceptions     Error EvalError RangeError ReferenceError SyntaxError TypeError URIError
+
+syntax keyword javaScriptFutureKeys     abstract enum int short boolean export interface static byte extends long super char final native synchronized class float package throws const goto private transient debugger implements protected volatile double import public 
 
 "" Code blocks
-syntax cluster javaScriptAll       contains=javaScriptComment,javaScriptLineComment,javaScriptDocComment,javaScriptStringD,javaScriptStringS,javaScriptRegexpString,javaScriptNumber,javaScriptFloat,javaScriptLabel,javaScriptPrototype,javaScriptSource,javaScriptType,javaScriptOperator,javaScriptBoolean,javaScriptNull,javaScriptFunction,javaScriptConditional,javaScriptRepeat,javaScriptBranch,javaScriptStatement,javaScriptGlobalObjects
+syntax cluster javaScriptAll       contains=javaScriptComment,javaScriptLineComment,javaScriptDocComment,javaScriptStringD,javaScriptStringS,javaScriptRegexpString,javaScriptNumber,javaScriptFloat,javaScriptLabel,javaScriptPrototype,javaScriptSource,javaScriptType,javaScriptOperator,javaScriptBoolean,javaScriptNull,javaScriptFunction,javaScriptConditional,javaScriptRepeat,javaScriptBranch,javaScriptStatement,javaScriptGlobalObjects,javaScriptExceptions,javaScriptFutureKeys
 syntax region  javaScriptBracket   matchgroup=javaScriptBracket transparent start="\[" end="\]" contains=@javaScriptAll,javaScriptParensErrB,javaScriptParensErrC,javaScriptBracket,javaScriptParen,javaScriptBlock,@htmlPreproc
 syntax region  javaScriptParen     matchgroup=javaScriptParen   transparent start="("  end=")"  contains=@javaScriptAll,javaScriptParensErrA,javaScriptParensErrC,javaScriptParen,javaScriptBracket,javaScriptBlock,@htmlPreproc
 syntax region  javaScriptBlock     matchgroup=javaScriptBlock   transparent start="{"  end="}"  contains=@javaScriptAll,javaScriptParensErrA,javaScriptParensErrB,javaScriptParen,javaScriptBracket,javaScriptBlock,@htmlPreproc
@@ -178,6 +177,7 @@ if version >= 508 || !exists("did_javascript_syn_inits")
   HiLink javaScriptSpecial              Special
   HiLink javaScriptSource               Special
   HiLink javaScriptGlobalObjects        Special
+  HiLink javaScriptExceptions           Special
   delcommand HiLink
 endif
 
