@@ -1,14 +1,11 @@
 " Vim syntax file
 " Language:     JavaScript
 " Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
-" Last Change:  2007 Jan. 6th
-" Version:      0.7.1
-" Changes:      1, Add DOM2, HTML, and CSS speicified attributes and methods, based on
-"                  http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
-"                  http://www.dannyg.com/ref/jsquickref.html
-"                  Thanks Claudio Fleiner <claudio@fleiner.com> for the great idea.
-"               2, Minor bug fix for JSDoc.
-"               3, Minor bug fix for comment highlight.
+" Last Change:  2007 Jan. 30th
+" Version:      0.7.2
+" Changes:      Turn off the DOM2, HTML, and CSS speicified attributes and methods by default.
+"               unless the "javascript_enable_domhtmlcss" was defined.
+" 
 " TODO:
 "  - Add the HTML syntax inside the JSDoc
 
@@ -21,7 +18,7 @@ if !exists("main_syntax")
   let main_syntax = 'javascript'
 endif
 
-" Drop fold if it set but vim doesn't support it.
+"" Drop fold if it set but VIM doesn't support it.
 if version < 600 && exists("javaScript_fold")
   unlet javaScript_fold
 else
@@ -45,7 +42,7 @@ syntax region  javaScriptComment        start="/\*"  end="\*/" contains=javaScri
 if !exists("javascript_ignore_javaScriptdoc")
   syntax case ignore
 
-  " syntax coloring for javadoc comments (HTML)
+  "" syntax coloring for javadoc comments (HTML)
   "syntax include @javaHtml <sfile>:p:h/html.vim
   "unlet b:current_syntax  
   
@@ -93,20 +90,23 @@ syntax keyword javaScriptFutureKeys     abstract enum int short boolean export i
 
 "" DOM/HTML/CSS specified things
 
+  " DOM2 Objects
+  syntax keyword javaScriptGlobalObjects  DOMImplementation DocumentFragment Document Node NodeList NamedNodeMap CharacterData Attr Element Text Comment CDATASection DocumentType Notation Entity EntityReference ProcessingInstruction
+  syntax keyword javaScriptExceptions     DOMException
+  
+  " DOM2 CONSTANT
+  syntax keyword javaScriptDomErrNo       INDEX_SIZE_ERR DOMSTRING_SIZE_ERR HIERARCHY_REQUEST_ERR WRONG_DOCUMENT_ERR INVALID_CHARACTER_ERR NO_DATA_ALLOWED_ERR NO_MODIFICATION_ALLOWED_ERR NOT_FOUND_ERR NOT_SUPPORTED_ERR INUSE_ATTRIBUTE_ERR INVALID_STATE_ERR SYNTAX_ERR INVALID_MODIFICATION_ERR NAMESPACE_ERR INVALID_ACCESS_ERR
+  syntax keyword javaScriptDomNodeConsts  ELEMENT_NODE ATTRIBUTE_NODE TEXT_NODE CDATA_SECTION_NODE ENTITY_REFERENCE_NODE ENTITY_NODE PROCESSING_INSTRUCTION_NODE COMMENT_NODE DOCUMENT_NODE DOCUMENT_TYPE_NODE DOCUMENT_FRAGMENT_NODE NOTATION_NODE 
+  
+  " HTML events and internal variables
+  syntax case ignore
+  syntax keyword javaScriptHtmlEvents     onblur onclick oncontextmenu ondblclick onfocus onkeydown onkeypress onkeyup onmousedown onmousemove onmouseout onmouseover onmouseup onresize
+  syntax case match
+
 " Follow stuff should be highligh within a special context
 " While it can't be handled with context depended with Regex based highlight
-if !exists("javascript_ignore_domhtmlcss")
-
-    " DOM2 things
-    syntax keyword javaScriptGlobalObjects  DOMImplementation DocumentFragment Document Node NodeList NamedNodeMap CharacterData Attr Element Text Comment CDATASection DocumentType Notation Entity EntityReference ProcessingInstruction
-    syntax keyword javaScriptExceptions     DOMException
-    
-    syntax keyword javaScriptDomErrNo       INDEX_SIZE_ERR DOMSTRING_SIZE_ERR HIERARCHY_REQUEST_ERR WRONG_DOCUMENT_ERR INVALID_CHARACTER_ERR NO_DATA_ALLOWED_ERR NO_MODIFICATION_ALLOWED_ERR NOT_FOUND_ERR NOT_SUPPORTED_ERR INUSE_ATTRIBUTE_ERR INVALID_STATE_ERR SYNTAX_ERR INVALID_MODIFICATION_ERR NAMESPACE_ERR INVALID_ACCESS_ERR
-    syntax keyword javaScriptDomNodeConsts  ELEMENT_NODE ATTRIBUTE_NODE TEXT_NODE CDATA_SECTION_NODE ENTITY_REFERENCE_NODE ENTITY_NODE PROCESSING_INSTRUCTION_NODE COMMENT_NODE DOCUMENT_NODE DOCUMENT_TYPE_NODE DOCUMENT_FRAGMENT_NODE NOTATION_NODE 
-
-    " HTML events and internal variables
-    syntax keyword javaScriptHtmlVars       window document event navigator forms frames history location opener parent status self screen arguments
-    syntax keyword javaScriptHtmlEvents     onblur onclick oncontextmenu ondblclick onfocus onkeydown onkeypress onkeyup onmousedown onmousemove onmouseout onmouseover onmouseup onresize
+" So, turn it off by default
+if exists("javascript_enable_domhtmlcss")
 
     " DOM2 things
     syntax match javaScriptDomElemAttrs     contained /\%(nodeName\|nodeValue\|nodeType\|parentNode\|childNodes\|firstChild\|lastChild\|previousSibling\|nextSibling\|attributes\|ownerDocument\|namespaceURI\|prefix\|localName\|tagName\)\>/
@@ -129,7 +129,8 @@ if !exists("javascript_ignore_domhtmlcss")
     syntax keyword javaScriptCssStyles      contained scrollbar3dLightColor scrollbarArrowColor scrollbarBaseColor scrollbarDarkShadowColor scrollbarFaceColor scrollbarHighlightColor scrollbarShadowColor scrollbarTrackColor
 
     " Highlight ways
-    syntax match javaScriptDotNotation      "\." nextgroup=javaScriptPrototype,javaScriptDomElemAttrs,javaScriptDomElemFuncs,javaScriptHtmlElemAttrs,javaScriptHtmlElemFuncs,javaScriptCssStyles
+    syntax match javaScriptDotNotation      "\." nextgroup=javaScriptPrototype,javaScriptDomElemAttrs,javaScriptDomElemFuncs,javaScriptHtmlElemAttrs,javaScriptHtmlElemFuncs
+    syntax match javaScriptDotNotation      "\.style\." nextgroup=javaScriptCssStyles
     
 endif "DOM/HTML/CSS
 
@@ -137,7 +138,7 @@ endif "DOM/HTML/CSS
 
 
 "" Code blocks
-syntax cluster javaScriptAll       contains=javaScriptComment,javaScriptLineComment,javaScriptDocComment,javaScriptStringD,javaScriptStringS,javaScriptRegexpString,javaScriptNumber,javaScriptFloat,javaScriptLabel,javaScriptSource,javaScriptType,javaScriptOperator,javaScriptBoolean,javaScriptNull,javaScriptFunction,javaScriptConditional,javaScriptRepeat,javaScriptBranch,javaScriptStatement,javaScriptGlobalObjects,javaScriptExceptions,javaScriptFutureKeys,javaScriptDomErrNo,javaScriptDomNodeConsts,javaScriptHtmlVars,javaScriptHtmlEvents,javaScriptDotNotation
+syntax cluster javaScriptAll       contains=javaScriptComment,javaScriptLineComment,javaScriptDocComment,javaScriptStringD,javaScriptStringS,javaScriptRegexpString,javaScriptNumber,javaScriptFloat,javaScriptLabel,javaScriptSource,javaScriptType,javaScriptOperator,javaScriptBoolean,javaScriptNull,javaScriptFunction,javaScriptConditional,javaScriptRepeat,javaScriptBranch,javaScriptStatement,javaScriptGlobalObjects,javaScriptExceptions,javaScriptFutureKeys,javaScriptDomErrNo,javaScriptDomNodeConsts,javaScriptHtmlEvents,javaScriptDotNotation
 syntax region  javaScriptBracket   matchgroup=javaScriptBracket transparent start="\[" end="\]" contains=@javaScriptAll,javaScriptParensErrB,javaScriptParensErrC,javaScriptBracket,javaScriptParen,javaScriptBlock,@htmlPreproc
 syntax region  javaScriptParen     matchgroup=javaScriptParen   transparent start="("  end=")"  contains=@javaScriptAll,javaScriptParensErrA,javaScriptParensErrC,javaScriptParen,javaScriptBracket,javaScriptBlock,@htmlPreproc
 syntax region  javaScriptBlock     matchgroup=javaScriptBlock   transparent start="{"  end="}"  contains=@javaScriptAll,javaScriptParensErrA,javaScriptParensErrB,javaScriptParen,javaScriptBracket,javaScriptBlock,@htmlPreproc
@@ -159,7 +160,7 @@ if exists("javaScript_fold")
     syntax region  javaScriptFuncBlock      contained matchgroup=javaScriptFuncBlock start="{" end="}" contains=@javaScriptAll,javaScriptParensErrA,javaScriptParensErrB,javaScriptParen,javaScriptBracket,javaScriptBlock fold
 
     "" Fold setting
-    setlocal foldlevel=3
+    setlocal foldlevel=6
     setlocal foldmethod=syntax
 
     setlocal foldtext=FT_JavaScriptDoc()
@@ -233,7 +234,6 @@ if version >= 508 || !exists("did_javascript_syn_inits")
   HiLink javaScriptDomElemAttrs         Label
   HiLink javaScriptDomElemFuncs         PreProc
 
-  HiLink javaScriptHtmlVars             Special
   HiLink javaScriptHtmlEvents           Special
   HiLink javaScriptHtmlElemAttrs        Label
   HiLink javaScriptHtmlElemFuncs        PreProc
@@ -244,6 +244,8 @@ if version >= 508 || !exists("did_javascript_syn_inits")
 endif
 
 " Define the htmlJavaScript for HTML syntax html.vim
+"syntax clear htmlJavaScript
+"syntax clear javaScriptExpression
 syntax cluster  htmlJavaScript contains=@javaScriptAll,javaScriptBracket,javaScriptParen,javaScriptBlock,javaScriptParenError
 syntax cluster  javaScriptExpression contains=@javaScriptAll,javaScriptBracket,javaScriptParen,javaScriptBlock,javaScriptParenError,@htmlPreproc
 
