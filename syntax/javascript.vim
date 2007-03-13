@@ -1,10 +1,9 @@
 " Vim syntax file
 " Language:     JavaScript
-" Maintainer:   Yi Zhao <zzlinux AT hotmail DOT com>
+" Maintainer:   Yi Zhao (ZHAOYI) <zzlinux AT hotmail DOT com>
 " Last Change:  2007 Jan. 30th
-" Version:      0.7.2
-" Changes:      Turn off the DOM2, HTML, and CSS speicified attributes and methods by default.
-"               unless the "javascript_enable_domhtmlcss" was defined.
+" Version:      0.7.3
+" Changes:      Add the keywords for JavaScript 1.7: let, yield,
 " 
 " TODO:
 "  - Add the HTML syntax inside the JSDoc
@@ -71,8 +70,8 @@ syntax keyword javaScriptPrototype      prototype
 
 "" Programm Keywords
 syntax keyword javaScriptSource         import export
-syntax keyword javaScriptType           this var const void 
-syntax keyword javaScriptOperator       delete new in instanceof typeof 
+syntax keyword javaScriptType           const this var void yield
+syntax keyword javaScriptOperator       delete new in instanceof let typeof 
 syntax keyword javaScriptBoolean        true false
 syntax keyword javaScriptNull           null
 
