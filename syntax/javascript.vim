@@ -1,9 +1,13 @@
 " Vim syntax file
 " Language:     JavaScript
 " Maintainer:   Yi Zhao (ZHAOYI) <zzlinux AT hotmail DOT com>
-" Last Change:  2007 Jan. 30th
-" Version:      0.7.3
-" Changes:      Add the keywords for JavaScript 1.7: let, yield,
+" Last Change:  May 14th, 2007
+" Version:      0.7.4
+" Changes:      1, Fix a bug reported by Matthew Gallant. 
+"                  It will cause the vimdiff (6.x) freezes (chokes, with a 100% cpu usage) 
+"                  and never finally displays the diff between the files. 
+"                  The script only can be terminated by CTRL+C. 
+"               2, Add some more JSDoc tags which used by Yahoo! UI
 " 
 " TODO:
 "  - Add the HTML syntax inside the JSDoc
@@ -46,8 +50,8 @@ if !exists("javascript_ignore_javaScriptdoc")
   "unlet b:current_syntax  
   
   syntax region javaScriptDocComment    matchgroup=javaScriptComment start="/\*\*\s*$"  end="\*/" contains=javaScriptDocTags,javaScriptCommentTodo,javaScriptCvsTag,@javaScriptHtml,@Spell fold
-  syntax match  javaScriptDocTags       contained "@\(param\|argument\|requires\|exception\|throws\|type\|class\|extends\|see\|link\|member\|base\|file\)\>" nextgroup=javaScriptDocParam,javaScriptDocSeeTag skipwhite
-  syntax match  javaScriptDocTags       contained "@\(deprecated\|fileoverview\|author\|license\|version\|returns\=\|constructor\|private\|final\|ignore\|addon\|exec\)\>"
+  syntax match  javaScriptDocTags       contained "@\(param\|argument\|requires\|exception\|throws\|type\|class\|extends\|see\|link\|member\|module\|method\|title\|namespace\|optional\|default\|base\|file\)\>" nextgroup=javaScriptDocParam,javaScriptDocSeeTag skipwhite
+  syntax match  javaScriptDocTags       contained "@\(beta\|deprecated\|description\|fileoverview\|author\|license\|version\|returns\=\|constructor\|private\|protected\|final\|ignore\|addon\|exec\)\>"
   syntax match  javaScriptDocParam      contained "\%(#\|\w\|\.\|:\|\/\)\+"
   syntax region javaScriptDocSeeTag     contained matchgroup=javaScriptDocSeeTag start="{" end="}" contains=javaScriptDocTags
 
@@ -158,26 +162,33 @@ if exists("javaScript_fold")
     syntax region  javaScriptFuncName       contained matchgroup=javaScriptFuncName start=/\%(\$\|\w\)*\s*(/ end=/)/ contains=javaScriptLineComment,javaScriptComment nextgroup=javaScriptFuncBlock skipwhite skipempty
     syntax region  javaScriptFuncBlock      contained matchgroup=javaScriptFuncBlock start="{" end="}" contains=@javaScriptAll,javaScriptParensErrA,javaScriptParensErrB,javaScriptParen,javaScriptBracket,javaScriptBlock fold
 
-    "" Fold setting
-    setlocal foldlevel=6
-    setlocal foldmethod=syntax
+    " We should not enable the folding for the diff mode.
+    if !exists("foldmethod") || foldmethod!="diff"
 
-    setlocal foldtext=FT_JavaScriptDoc()
+      " Avoid to redefine the function.
+      if !exists("*FT_JavaScriptDoc")
+        "" Default fold text for JavaScript JSDoc and Function
+        function! FT_JavaScriptDoc()
+          let i = 0
+          while i < 3
+            let line = getline(v:foldstart + i)
+            "let line = substitute(line, '^\s\+', '', '')
+            let line = substitute(line, '\s\+$', '', '')
+            if match(line, '\w\+') >= 0
+              break
+            endif
+            let i += 1
+          endwhile
+          return v:folddashes . line
+        endfunction
+      endif
 
-    "" Default fold text for JavaScript JSDoc and Function
-    function! FT_JavaScriptDoc()
-      let i = 0
-      while i < 3
-        let line = getline(v:foldstart + i)
-        "let line = substitute(line, '^\s\+', '', '')
-        let line = substitute(line, '\s\+$', '', '')
-        if match(line, '\w\+') >= 0 
-          break
-        endif
-        let i += 1
-      endwhile
-      return v:folddashes . line
-    endfunction
+      "" Fold setting
+      setlocal foldlevel=4
+      setlocal foldmethod=syntax
+      " Redeine the folder text
+      setlocal foldtext=FT_JavaScriptDoc()
+    endif
 
 else
     syntax keyword javaScriptFunction       function
